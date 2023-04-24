@@ -60,8 +60,11 @@ def convert_txt_to_list(wildcards):
         fd_list = fp.read().split(',')
     return fd_list[:-1]
 
+def get_subj_ids(wildcards):
+    return viscontours.get_contour_list_drawn_by_rater(config['trace_save_path'], wildcards.hemi, wildcards.roi, wildcards.rater)
+
 def get_trace_file_names(wildcards):
-    ids_list = convert_txt_to_list(wildcards)
+    ids_list = get_subj_ids(wildcards)
     all_files = []
     for sid in ids_list:
         f = os.path.join(config['cache_path'],'traces',f"contour-path_space-fsaverage_rater-{wildcards.rater}_sid-{sid}_hemi-{wildcards.hemi}_roi-{wildcards.roi}_npoints-{wildcards.n_points}.mgz")
