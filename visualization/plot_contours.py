@@ -92,10 +92,9 @@ def make_trace(rater,
         total_end = time.time()
         _display_msg(f'subject no. {subject} is finished! Elapsed time: {np.round(total_end - total_start, 2)} sec',
                      True)
-        return x, y
     except:
         print(f'{subject} has an error!')
-
+    return x, y
 
 
 def main(rater,
