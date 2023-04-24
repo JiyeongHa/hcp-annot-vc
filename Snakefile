@@ -23,6 +23,8 @@ rater_list = ['BrendaQiu',
               'nourahboujaber',
               'jennifertepan']
 
+ruleorder: get_subj_ids_for_rater > all_sids
+
 rule get_subj_ids_for_rater:
     output:
         subj_ids = os.path.join(config['cache_path'], 'subj_ids', "rater-{rater}_hemi-{hemi}_roi-{roi}.txt")
@@ -68,7 +70,6 @@ def get_trace_file_names(wildcards):
 
 rule all_sids:
     input:
-        subj_ids = os.path.join(config['cache_path'],'subj_ids',"rater-{rater}_hemi-{hemi}_roi-{roi}.txt"),
         all_files = lambda wildcards: get_trace_file_names(wildcards)
     output:
         os.path.join(config['cache_path'], 'traces', "allsids_contour-path_space-fsaverage_rater-{rater}_hemi-{hemi}_roi-{roi}_npoints-{n_points}.txt")
@@ -78,4 +79,5 @@ rule all_sids:
 
 rule all_sids_all_raters:
     input:
+        expand(os.path.join(config['cache_path'],'subj_ids',"rater-{rater}_hemi-{hemi}_roi-{roi}.txt"), rater=['JiyeongHa'], hemi=['lh'], roi=['hV4']),
         expand(os.path.join(config['cache_path'], 'traces', "allsids_contour-path_space-fsaverage_rater-{rater}_hemi-{hemi}_roi-{roi}_npoints-{n_points}.txt"), rater=['JiyeongHa'], hemi=['lh'], roi=['hV4'], n_points=[500])
