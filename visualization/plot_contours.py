@@ -5,10 +5,7 @@ import matplotlib.pyplot as plt
 from tqdm.notebook import tqdm
 import time
 from glob import glob
-from hcpannot import (vc_plan,
-                      save_contours,
-                      load_contours,
-                      subject_ids)
+from hcpannot import (vc_plan)
 
 
 def load_cortex(subject, hemi):
@@ -66,11 +63,11 @@ def make_trace(rater,
                verbose=True,
                cache_path=None,
                trace_save_path=None):
-    _display_msg(f'---------------------', verbose)
-    _display_msg(f'subject no.{subject}', verbose)
+    _display_msg(f'---------------------', True)
+    _display_msg(f'subject no.{subject}', True)
     total_start = time.time()
     if os.path.isfile(cache_path):
-        _display_msg(f'found cache data!', verbose)
+        _display_msg(f'found cache data!', True)
         (x, y) = ny.load(cache_path)
     else:
         annot = vc_plan(rater=rater, sid=subject, hemisphere=hemi, save_path=trace_save_path)
@@ -93,7 +90,7 @@ def make_trace(rater,
         ny.save(cache_path, [x, y])
     total_end = time.time()
     _display_msg(f'subject no. {subject} is finished! Elapsed time: {np.round(total_end - total_start, 2)} sec',
-                 verbose)
+                 True)
     return x, y
 
 
@@ -121,7 +118,6 @@ def main(rater,
         x_list.append(x)
         y_list.append(y)
         total_end = time.time()
-        _display_msg(f'subject no. {sid} is finished! Total time: {np.round(total_end - total_start, 2)} sec', verbose)
     normed_fsa_coords_dict = arrange_multiple_coords_into_dict(x_list, y_list, subject_list, average)
     return normed_fsa_coords_dict
 

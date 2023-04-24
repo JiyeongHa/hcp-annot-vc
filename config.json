@@ -1,0 +1,8 @@
+{
+  "cache_path": "/Users/jh7685/Documents/Github/hcp-annot-vc-data/",
+  "image_cache_path": "/Users/jh7685/Documents/Github/hcp-annot-vc-data/annot-images",
+  "v123_cache_path": "/Users/jh7685/Documents/Github/hcp-annot-vc-data/annot-v123",
+  "csulc_cache_path": "/Users/jh7685/Documents/Github/hcp-annot-vc-data/annot-csulc",
+  "trace_save_path": "/Users/jh7685/Documents/Github/hcp-annot-vc-data/hcp-annot-vc/save",
+  "labels_path": "/Users/jh7685/Documents/Github/hcp-annot-vc-data/results/labels"
+}
