@@ -3,18 +3,19 @@ import sys
 import numpy as np
 import pandas as pd
 import matplotlib as mpl
+configfile:
+    "config.json"
 
 # The cache directories:
-cache_path = '/Users/jh7685/Documents/Github/hcp-annot-vc-data/'
+cache_path = config['cache_path']
+trace_save_path = config['trace_save_path']
 image_cache_path = f'{cache_path}/annot-images'
 v123_cache_path = f'{cache_path}/annot-v123'
 csulc_cache_path = f'{cache_path}/annot-csulc'
-trace_save_path = f'{cache_path}/hcp-annot-vc/save'
 labels_path = f'{cache_path}/results/labels'
 os.environ['HCPANNOT_LOAD_PATH'] = cache_path
 from visualization import *
-configfile:
-    "config.json"
+
 rater_list = ['BrendaQiu',
               'bogengsong',
               'JiyeongHa',
