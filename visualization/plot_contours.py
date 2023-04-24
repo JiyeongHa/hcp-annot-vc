@@ -77,7 +77,7 @@ def make_trace(rater,
         end = time.time()
         _display_msg(f'done! elpased time is {np.round(end - start, 3)} sec.\nNow converting trace to path...', verbose)
         start = time.time()
-        path = roi_trace_to_path(annot, cortex, roi, hemi)
+        path = roi_trace_to_path(annot, cortex, roi)
         end = time.time()
         _display_msg(f'done! elpased time is {np.round(end - start, 3)} sec', verbose)
         _display_msg('Now transforming the path to fsaverage space...', verbose)
