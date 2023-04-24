@@ -18,7 +18,7 @@ from visualization import *
 
 RATERS = ['BrendaQiu', 'bogengsong', 'JiyeongHa', 'lindazelinzhao', 'nourahboujaber', 'jennifertepan']
 ROIS = ['hV4', 'VO1_VO2', 'VO_outer', 'hV4_VO1']
-
+HEMIS = ['lh','rh']
 
 
 rule get_subj_ids_for_rater:
