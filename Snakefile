@@ -16,13 +16,8 @@ labels_path = f'{cache_path}/results/labels'
 os.environ['HCPANNOT_LOAD_PATH'] = cache_path
 from visualization import *
 
-rater_list = ['BrendaQiu',
-              'bogengsong',
-              'JiyeongHa',
-              'lindazelinzhao',
-              'nourahboujaber',
-              'jennifertepan']
-
+RATERS = ['BrendaQiu', 'bogengsong', 'JiyeongHa', 'lindazelinzhao', 'nourahboujaber', 'jennifertepan']
+ROIS = ['hV4', 'VO1_VO2', 'VO_outer', 'hV4_VO1']
 ruleorder: get_subj_ids_for_rater > all_sids
 
 rule get_subj_ids_for_rater:
@@ -54,6 +49,7 @@ rule save_trace_cache:
                                       output.cache_file,
                                       params.trace_save_path)
 
+
 def convert_txt_to_list(wildcards):
     text_file = os.path.join(config['cache_path'], 'subj_ids', f"rater-{wildcards.rater}_hemi-{wildcards.hemi}_roi-{wildcards.roi}.txt")
     with open(text_file,'r') as fp:
@@ -82,4 +78,4 @@ rule all_sids:
 
 rule all_sids_all_raters:
     input:
-        expand(os.path.join(config['cache_path'], 'traces', "allsids_contour-path_space-fsaverage_rater-{rater}_hemi-{hemi}_roi-{roi}_npoints-{n_points}.txt"), rater=['JiyeongHa'], hemi=['lh'], roi=['hV4'], n_points=[500])
+        expand(os.path.join(config['cache_path'], 'traces', "allsids_contour-path_space-fsaverage_rater-{rater}_hemi-{hemi}_roi-{roi}_npoints-{n_points}.txt"), rater=RATERS, hemi=['lh','rh'], roi=ROIS, n_points=[500])
