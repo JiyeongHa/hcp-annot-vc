@@ -77,4 +77,4 @@ rule all_sids:
 
 rule all_sids_all_raters:
     input:
-        expand(os.path.join(config['cache_path'], 'traces', "allsids_contour-path_space-fsaverage_rater-{rater}_hemi-{hemi}_roi-{roi}_npoints-{n_points}.txt"), rater=['JiyeongHa'], hemi=['lh'], roi=['hV4'], n_points=[3])
+        expand(os.path.join(config['cache_path'], 'traces', "allsids_contour-path_space-fsaverage_rater-{rater}_hemi-{hemi}_roi-{roi}_npoints-{n_points}.txt"), rater=['JiyeongHa'], hemi=['lh'], roi=['hV4'], n_points=[500])
