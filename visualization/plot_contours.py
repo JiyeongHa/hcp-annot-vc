@@ -13,7 +13,7 @@ def load_cortex(subject, hemi):
     return cortex
 
 
-def roi_trace_to_path(dat, cortex, roi, hemi):
+def roi_trace_to_path(dat, cortex, roi):
     # grab a trace
     trace = dat['traces'][roi]
     # get the subject's hemisphere mesh
