@@ -16,12 +16,9 @@ labels_path = f'{cache_path}/results/labels'
 os.environ['HCPANNOT_LOAD_PATH'] = cache_path
 from visualization import *
 
-#RATERS = ['BrendaQiu', 'bogengsong', 'JiyeongHa', 'lindazelinzhao', 'nourahboujaber', 'jennifertepan']
-#ROIS = ['hV4', 'VO1_VO2', 'VO_outer', 'hV4_VO1']
+RATERS = ['BrendaQiu', 'bogengsong', 'JiyeongHa', 'lindazelinzhao', 'nourahboujaber', 'jennifertepan']
+ROIS = ['hV4', 'VO1_VO2', 'VO_outer', 'hV4_VO1']
 
-RATERS = ['JiyeongHa']
-ROIS = ['hV4']
-HEMIS = ['lh','rh']
 
 
 rule get_subj_ids_for_rater:
