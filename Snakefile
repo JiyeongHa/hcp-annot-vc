@@ -68,7 +68,8 @@ def get_trace_file_names(wildcards):
 
 rule all_sids:
     input:
-        all_files = lambda wildcards: get_trace_file_names(wildcards)
+        all_files = lambda wildcards: get_trace_file_names(wildcards),
+        subj_ids = os.path.join(config['cache_path'], 'subj_ids', "rater-{rater}_hemi-{hemi}_roi-{roi}.txt")
     output:
         os.path.join(config['cache_path'], 'traces', "allsids_contour-path_space-fsaverage_rater-{rater}_hemi-{hemi}_roi-{roi}_npoints-{n_points}.txt")
     shell:
