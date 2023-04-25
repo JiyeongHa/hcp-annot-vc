@@ -137,4 +137,3 @@ docker/local_cache/*
 .DS_Store
 ._.DS_Store
 !/config.json
-!/config.json
