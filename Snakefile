@@ -35,7 +35,7 @@ rule get_subj_ids_for_rater:
 
 rule save_trace_cache:
     output:
-        cache_file = os.path.join(config['cache_path'], 'traces', "contour-path_space-fsaverage_rater-{rater}_sid-{sid}_hemi-{hemi}_roi-{roi}_npoints-{n_points}.mgz")
+        cache_file = os.path.join(config['cache_path'], 'results', 'averages', "contour-path_space-fsaverage_rater-{rater}_sid-{sid}_hemi-{hemi}_roi-{roi}_npoints-{n_points}.mgz")
     params:
         trace_save_path = config['trace_save_path']
     run:
@@ -64,7 +64,7 @@ def get_trace_file_names(wildcards):
     ids_list = get_subj_ids(wildcards)
     all_files = []
     for sid in ids_list:
-        f = os.path.join(config['cache_path'],'traces',f"contour-path_space-fsaverage_rater-{wildcards.rater}_sid-{sid}_hemi-{wildcards.hemi}_roi-{wildcards.roi}_npoints-{wildcards.n_points}.mgz")
+        f = os.path.join(config['cache_path'], 'results', 'averages', f"contour-path_space-fsaverage_rater-{wildcards.rater}_sid-{sid}_hemi-{wildcards.hemi}_roi-{wildcards.roi}_npoints-{wildcards.n_points}.mgz")
         all_files.append(f)
     return all_files
 
@@ -72,11 +72,11 @@ rule all_sids:
     input:
         all_files = lambda wildcards: get_trace_file_names(wildcards)
     output:
-        os.path.join(config['cache_path'], 'traces', "allsids_contour-path_space-fsaverage_rater-{rater}_hemi-{hemi}_roi-{roi}_npoints-{n_points}.txt")
+        os.path.join(config['cache_path'], 'results', 'averages', "allsids_contour-path_space-fsaverage_rater-{rater}_hemi-{hemi}_roi-{roi}_npoints-{n_points}.txt")
     shell:
         "touch {output}"
 
 
 rule all_sids_all_raters:
     input:
-        expand(os.path.join(config['cache_path'], 'traces', "allsids_contour-path_space-fsaverage_rater-{rater}_hemi-{hemi}_roi-{roi}_npoints-{n_points}.txt"), rater=RATERS, hemi=HEMIS, roi=ROIS, n_points=[500])
+        expand(os.path.join(config['cache_path'], 'results', 'averages',  "allsids_contour-path_space-fsaverage_rater-{rater}_hemi-{hemi}_roi-{roi}_npoints-{n_points}.txt"), rater=RATERS, hemi=HEMIS, roi=ROIS, n_points=[500])
