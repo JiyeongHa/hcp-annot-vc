@@ -55,22 +55,22 @@ def _display_msg(message, verbose):
         pass
 
 
-def make_trace(rater,
+def make_path(rater,
                hemi,
                roi,
                subject,
                n_points,
-               verbose=True,
-               cache_path=None,
-               trace_save_path=None):
-    _display_msg(f'---------------------', True)
-    _display_msg(f'subject no.{subject}', True)
+               trace_dir,
+               save_path,
+               verbose=True):
+    _display_msg(f'---------------------', verbose)
+    _display_msg(f'subject no.{subject}', verbose)
     total_start = time.time()
-    if os.path.isfile(cache_path):
-        _display_msg(f'found cache data!', True)
-        (x, y) = ny.load(cache_path)
+    if os.path.isfile(save_path):
+        _display_msg(f'found cache data!', verbose)
+        (x, y) = ny.load(save_path)
     else:
-        annot = vc_plan(rater=rater, sid=subject, hemisphere=hemi, save_path=trace_save_path)
+        annot = vc_plan(rater=rater, sid=subject, hemisphere=hemi, save_path=trace_dir)
         _display_msg(f'loading surface mesh....', verbose)
         start = time.time()
         cortex = load_cortex(subject, hemi)
@@ -87,7 +87,7 @@ def make_trace(rater,
         _display_msg(f'done! elpased time is {np.round(end - start, 3)} sec.\nnow interpolating the coordinates..',
                      verbose)
         (x, y) = normalize_coords(fsa_coords, n_points)
-        ny.save(cache_path, [x, y])
+        ny.save(save_path, [x, y])
     total_end = time.time()
     _display_msg(f'subject no. {subject} is finished! Elapsed time: {np.round(total_end - total_start, 2)} sec',
                  True)
@@ -107,21 +107,13 @@ def main(rater,
     _display_msg(f'**number of subjects: {len(subject_list)}\n**nuber of points:{n_points}', verbose)
 
     for sid, cache_file in tqdm(zip(subject_list, cache_file_list)):
-        x, y = make_trace(rater,
-                          hemi,
-                          roi,
-                          sid,
-                          n_points,
-                          verbose,
-                          cache_file,
-                          trace_save_path)
+        x, y = make_path(rater, hemi, roi, sid, n_points, verbose, cache_file, trace_save_path)
         x_list.append(x)
         y_list.append(y)
-        total_end = time.time()
     normed_fsa_coords_dict = arrange_multiple_coords_into_dict(x_list, y_list, subject_list, average)
     return normed_fsa_coords_dict
 
-def plot_multiple_traces(normed_fsa_coords_dict, legend=True, average_only=False, **kwargs):
+def plot_multiple_path(normed_fsa_coords_dict, legend=True, average_only=False, **kwargs):
     title = kwargs.pop('title', None)
     if average_only:
         normed_fsa_coords_dict = {'avg': normed_fsa_coords_dict['avg']}
@@ -140,7 +132,7 @@ def plot_multiple_traces(normed_fsa_coords_dict, legend=True, average_only=False
     ax.get_legend().set_visible(legend)
     plt.tight_layout()
 
-def get_contour_list_drawn_by_rater(trace_save_path, hemi, roi, rater, return_full_path=False):
+def get_trace_list_drawn_by_rater(trace_save_path, hemi, roi, rater, return_full_path=False):
 
     path_list = glob(os.path.join(trace_save_path, rater, f'*/{hemi}.{roi}.json'))
     if return_full_path is True:
@@ -148,3 +140,49 @@ def get_contour_list_drawn_by_rater(trace_save_path, hemi, roi, rater, return_fu
     else:
         sids_list = [int(k.split('/')[-2]) for k in path_list]
         return sids_list
+
+
+def lwplot(x, y, axes=None, fill=True, edgecolor=None, color=None, **kw):
+    '''
+    lwplot(x, y) is equivalent to pyplot.plot(x, y), however the linewidth or lw options
+      are interpreted in terms of the the coordinate system instead of printer points.
+    lwplot(x, y, ax) plots on the given axes ax.
+
+    All optional arguments that can be passed to pyplot's Polygon can be passed to lwplot.
+    '''
+    from neuropythy.util import zinv
+    import pimms
+    import matplotlib as mpl
+    lw = kw['linewidth'] if 'linewidth' in kw else kw['lw'] if 'lw' in kw else None
+    if 'linewidth' in kw:
+        lw = kw.pop('linewidth')
+    elif 'lw' in kw:
+        lw = kw.pop('lw')
+    else:
+        lw = 0
+    axes = plt.gca() if axes is None else axes
+    if len(x) < 2: raise ValueError('lwplot line must be at least 2 points long')
+    # we plot a particular thickness; we need to know the orthogonals at each point...
+    pts = np.transpose([x, y])
+    dd = np.vstack([[pts[1] - pts[0]], pts[2:] - pts[:-2], [pts[-1] - pts[-2]]])
+    nrm = np.sqrt(np.sum(dd ** 2, 1))
+    dd *= np.reshape(zinv(nrm), (-1, 1))
+    dd = np.transpose([dd[:, 1], -dd[:, 0]])
+    # we make a polygon or a trimesh...
+    if pimms.is_vector(lw): lw = np.reshape(lw, (-1, 1))
+    xy = np.vstack([pts + lw * dd, np.flipud(pts - lw * dd)])
+    n = len(pts)
+    if pimms.is_vector(color) and len(color) == n:
+        clr = np.concatenate([color, np.flip(color)])
+        (nf0, nf1) = (np.arange(n - 1), np.arange(1, n))
+        (nb0, nb1) = (2 * n - nf0 - 1, 2 * n - nf1 - 1)
+        tris = np.hstack([(nf0, nf1, nb0), (nb0, nb1, nf1)]).T
+        (x, y) = xy.T
+        tri = mpl.tri.Triangulation(x, y, tris)
+        if 'cmap' not in kw: kw['cmap'] = 'hot'
+        return axes.tripcolor(tri, clr, shading='gouraud',
+                              linewidth=0, **kw)
+    else:
+        pg = plt.Polygon(xy, True, fill=fill, edgecolor=edgecolor,
+                         linestyle=None, linewidth=0, color=color, **kw)
+        return axes.add_patch(pg)
