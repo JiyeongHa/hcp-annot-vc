@@ -8,6 +8,25 @@ from glob import glob
 from hcpannot import (vc_plan)
 
 
+
+def set_rcParams(rc):
+    if rc is None:
+        pass
+    else:
+        for k, v in rc.items():
+            plt.rcParams[k] = v
+
+def set_fontsize(small, medium, large):
+    font_rc = {'font.size': medium,
+          'axes.titlesize': large,
+          'axes.labelsize': medium,
+          'xtick.labelsize': small,
+          'ytick.labelsize': small,
+          'legend.fontsize': small,
+          'figure.titlesize': large}
+    set_rcParams(font_rc)
+
+
 def load_cortex(subject, hemi):
     cortex = ny.data['hcp_lines'].subjects[subject].hemis[hemi]  # cortex object
     return cortex
@@ -145,7 +164,7 @@ def get_trace_list_drawn_by_rater(trace_save_path, hemi, roi, rater, return_full
 def lwplot(x, y, axes=None, fill=True, edgecolor=None, color=None, **kw):
     '''
     lwplot(x, y) is equivalent to pyplot.plot(x, y), however the linewidth or lw options
-      are interpreted in terms of the the coordinate system instead of printer points.
+      are interpreted in terms of the coordinate system instead of printer points.
     lwplot(x, y, ax) plots on the given axes ax.
 
     All optional arguments that can be passed to pyplot's Polygon can be passed to lwplot.
@@ -153,6 +172,7 @@ def lwplot(x, y, axes=None, fill=True, edgecolor=None, color=None, **kw):
     from neuropythy.util import zinv
     import pimms
     import matplotlib as mpl
+
     lw = kw['linewidth'] if 'linewidth' in kw else kw['lw'] if 'lw' in kw else None
     if 'linewidth' in kw:
         lw = kw.pop('linewidth')
@@ -183,6 +203,20 @@ def lwplot(x, y, axes=None, fill=True, edgecolor=None, color=None, **kw):
         return axes.tripcolor(tri, clr, shading='gouraud',
                               linewidth=0, **kw)
     else:
+        mean_contours = axes.plot(x, y, 'k-', linewidth=0)
+
         pg = plt.Polygon(xy, True, fill=fill, edgecolor=edgecolor,
                          linestyle=None, linewidth=0, color=color, **kw)
+
         return axes.add_patch(pg)
+
+def find_interquartile_range(my_list, axis=0):
+    """ takes in a 2d list which consists of subjects on the row and each dot point as a column.
+    The default purpose is to find the IQR around each point index (across sid)"""
+    return np.percentile(my_list, 75, axis=axis) - np.percentile(my_list, 25, axis=axis)
+
+def calculate_IQR_summary(x, y, axis=0):
+    x_iqr = find_interquartile_range(x, axis=axis)
+    y_iqr = find_interquartile_range(y, axis=axis)
+    return np.sqrt(x_iqr ** 2 + y_iqr ** 2)
+
