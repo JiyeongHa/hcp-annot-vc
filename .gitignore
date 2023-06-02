@@ -138,3 +138,4 @@ docker/local_cache/*
 ._.DS_Store
 !/config.json
 /.snakemake/
+/.snakemake/metadata/

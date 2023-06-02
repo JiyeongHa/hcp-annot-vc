@@ -6,7 +6,7 @@ from tqdm.notebook import tqdm
 import time
 from glob import glob
 from hcpannot import (vc_plan)
-
+import seaborn as sns
 
 
 def set_rcParams(rc):
@@ -201,7 +201,7 @@ def lwplot(x, y, axes=None, fill=True, edgecolor=None, color=None, **kw):
         tri = mpl.tri.Triangulation(x, y, tris)
         if 'cmap' not in kw: kw['cmap'] = 'hot'
         return axes.tripcolor(tri, clr, shading='gouraud',
-                              linewidth=0, **kw)
+                              linewidt=0, **kw)
     else:
         mean_contours = axes.plot(x, y, 'k-', linewidth=0)
 
@@ -220,3 +220,25 @@ def calculate_IQR_summary(x, y, axis=0):
     y_iqr = find_interquartile_range(y, axis=axis)
     return np.sqrt(x_iqr ** 2 + y_iqr ** 2)
 
+
+def check_sids(df, sid, hue, hue_order=None,
+               col=None, col_order=None,
+               height=5, **kwargs):
+    sns.set_context("notebook", font_scale=2.5)
+    subj_ids = list(ny.data['hcp_lines'].subject_list)
+    df = df.replace({sid: dict(zip(subj_ids, np.arange(0, 181)))})
+    grid = sns.FacetGrid(df,
+                         col=col, col_order=col_order,
+                         height=height,
+                         aspect=2,
+                         palette=sns.color_palette("tab10"),
+                         legend_out=True,
+                         sharex=True, sharey=True, **kwargs)
+
+    grid = grid.map_dataframe(sns.histplot, sid,
+                              hue=hue, hue_order=hue_order,
+                              multiple="stack", discrete=True)
+    grid.add_legend()
+    grid.set_axis_labels('HCP subjects','Counts')
+
+    return grid
