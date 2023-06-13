@@ -136,3 +136,7 @@ docker/local_cache/*
 # Mac OS files
 .DS_Store
 ._.DS_Store
+
+.snakemake
+.idea
+
