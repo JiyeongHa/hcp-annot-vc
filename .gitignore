@@ -139,4 +139,3 @@ docker/local_cache/*
 
 .snakemake
 .idea
-

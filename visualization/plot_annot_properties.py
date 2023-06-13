@@ -42,27 +42,31 @@ def get_correlation_matrix(df):
     mask = np.triu(corr_matrix)
     return corr_matrix, mask
 
+
 def heatmap_surface_area(df, mask=None, height=7, cmap="YlOrRd",
-                         annot=True,
+                         annot=True, boundary_line=None,
                          fmt=".2f", vmin=0, vmax=1):
     sns.set(style={'axes.facecolor': 'white', 'font.family': 'Helvetica'},
             rc={'axes.labelpad': 20, 'figure.figsize': (height, height)},
-            font_scale=1.5)
+            font_scale=height / 6)
     if annot is True:
         annot_kws = {"size": 35 / np.sqrt(len(df))}
     else:
         annot_kws = None
-    grid = sns.heatmap(df, mask=mask,
-                annot=annot, annot_kws=annot_kws, fmt=fmt,
-                cmap=cmap, vmin=vmin, vmax=vmax, cbar_kws={"shrink": .7},
-                linewidth=.3, square=True)
-    return grid
+    ax = sns.heatmap(df, mask=mask,
+                       annot=annot, annot_kws=annot_kws, fmt=fmt,
+                       cmap=cmap, vmin=vmin, vmax=vmax, cbar_kws={"shrink": .7},
+                       linewidth=.3, square=True)
+    if boundary_line is not None:
+        ax.hlines(boundary_line, ax.get_xlim()[0], (ax.get_xlim()[1]/2)+0.5, color='blue', linewidth=2, linestyles='--'),
+        ax.vlines(boundary_line, (ax.get_ylim()[0]/2)+0.5, ax.get_ylim()[0], color='blue', linewidth=2, linestyles='--')
+    return ax
 
 def violinplot_surface_area(df, x, x_order, hue='hemisphere', hue_order=['lh','rh'], split=True,
                             col=None, col_wrap=None,
                             relative_area=True, height=8, cmap=sns.color_palette("Spectral")):
     sns.set(style={'axes.facecolor':'white', 'font.family':'Helvetica'},
-            rc={'axes.labelpad': 20}, font_scale=height/4)
+            rc={'axes.labelpad': 25}, font_scale=height/3)
     sns.despine(top=True, bottom=True, right=True)
     if relative_area is True:
         df['p_surface_area'] = df.apply(lambda x: calculate_percent(x['surface_area'], cortex=x['cortex']), axis=1)
@@ -82,18 +86,23 @@ def violinplot_surface_area(df, x, x_order, hue='hemisphere', hue_order=['lh','r
                     inner='box', linewidth=2, saturation=0.9, bw=.15, edgecolor='black')
     grid.set_axis_labels('', y_label)
     grid.add_legend(title=hue.title(), bbox_to_anchor=(1, 0.87))
+    # for ax in grid.axes:
+    #     ax.tick_params(bottom=False)
     if col is None:
+        grid.ax.tick_params(bottom=False)
         for edge in range(df[x].nunique() * 3):
             grid.ax.collections[edge].set_edgecolor('black')
         for edge in range(df[x].nunique()):
             grid.ax.get_children()[4 + (edge) * 5].set_color('black')
             grid.ax.get_children()[5 + (edge) * 5].set_color('black')
+
     else:
         plt.subplots_adjust(hspace=0.2)
         for subplot_title, ax in grid.axes_dict.items():
             ax.set_title(subplot_title, pad=40)
         for ax in grid.axes:
             ax.title.set_position([.5, 2])
+            ax.tick_params(bottom=False)
             for edge in range(df[x].nunique() * 3):
                 ax.collections[edge].set_edgecolor('black')
             for edge in range(df[x].nunique()):
