@@ -139,3 +139,4 @@ docker/local_cache/*
 !/config.json
 /.snakemake/
 /.snakemake/metadata/
+/.idea
