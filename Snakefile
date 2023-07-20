@@ -8,10 +8,10 @@ configfile:
 
 # The cache directories:
 cache_path = config['CACHE_DIR']
-image_cache_path = f'{cache_path}/annot-images'
-v123_cache_path = f'{cache_path}/annot-v123'
-csulc_cache_path = f'{cache_path}/annot-csulc'
-labels_path = f'{cache_path}/results/labels'
+# image_cache_path = f'{cache_path}/annot-images'
+# v123_cache_path = f'{cache_path}/annot-v123'
+# csulc_cache_path = f'{cache_path}/annot-csulc'
+# labels_path = f'{cache_path}/results/labels'
 os.environ['HCPANNOT_LOAD_PATH'] = cache_path
 from visualization import *
 
@@ -63,7 +63,7 @@ def get_subj_ids(wildcards, all=False):
     else:
         import neuropythy as ny
         subj_ids = ny.data['hcp_lines'].subject_list
-        return subj_ids
+    return subj_ids
 
 def get_trace_file_names(wildcards, all):
     ids_list = get_subj_ids(wildcards, all)

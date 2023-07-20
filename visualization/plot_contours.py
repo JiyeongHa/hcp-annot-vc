@@ -7,7 +7,7 @@ import time
 from glob import glob
 from hcpannot import (vc_plan)
 import seaborn as sns
-
+from visualization import utils
 
 def set_rcParams(rc):
     if rc is None:
@@ -221,24 +221,50 @@ def calculate_IQR_summary(x, y, axis=0):
     return np.sqrt(x_iqr ** 2 + y_iqr ** 2)
 
 
-def check_sids(df, sid, hue, hue_order=None,
+def check_sids(df, sid, y=None, hue=None, hue_order=None,
+               row=None, row_order=None,
                col=None, col_order=None,
-               height=5, **kwargs):
+               suptitle=' ',
+               height=10, save_path=None, **kwargs):
+    rc = {'xtick.bottom': True,
+          'xtick.labelbottom': True,
+          'xtick.major.size': 2,
+          'xtick.major.width': 2,
+          'xtick.labelsize': 8,
+          'ytick.left': True,
+          'ytick.labelleft': True,
+          'ytick.major.size': 2,
+          'ytick.major.width': 2,
+          'ytick.labelsize': 8,
+          'font.family': 'Helvetica',
+          'axes.linewidth': 2,
+          'axes.titlesize': 10,
+          'axes.titlepad': 10,
+          'axes.titleweight': "bold",
+          'axes.labelpad': 20,
+          }
+    set_rcParams(rc)
     sns.set_context("notebook", font_scale=2.5)
     subj_ids = list(ny.data['hcp_lines'].subject_list)
+    subj_ids.sort()
     df = df.replace({sid: dict(zip(subj_ids, np.arange(0, 181)))})
     grid = sns.FacetGrid(df,
                          col=col, col_order=col_order,
+                         row=row, row_order=row_order,
                          height=height,
-                         aspect=2,
-                         palette=sns.color_palette("tab10"),
+                         aspect=3.5,
                          legend_out=True,
                          sharex=True, sharey=True, **kwargs)
-
-    grid = grid.map_dataframe(sns.histplot, sid,
+    grid = grid.map_dataframe(sns.histplot, sid, y,
+                              palette=sns.color_palette('hls', 6),
                               hue=hue, hue_order=hue_order,
+                              edgecolor='grey', linewidth=0.01,
                               multiple="stack", discrete=True)
+    # for subplot_title, ax in grid.axes_dict.items():
+    #     ax.set_title(f" ")
     grid.add_legend()
-    grid.set_axis_labels('HCP subjects','Counts')
-
+    grid.fig.suptitle(suptitle, fontweight='bold')
+    grid.set_axis_labels('HCP subjects', 'Researchers')
+    grid.set(xlim=(0, 180), xticks=(0, 90, 180))
+    utils.save_fig(save_path)
     return grid
