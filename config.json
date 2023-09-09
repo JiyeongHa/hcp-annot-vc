@@ -1,6 +1,6 @@
 {
-  "CACHE_DIR_OLD": "/Users/jh7685/Documents/Github/hcp-annot-vc-data/",
-  "CACHE_DIR": "/Users/jh7685/Projects/hcp-annot-vc/data_hcp-annot-vc",
-  "TRACE_DIR": "/Users/jh7685/Projects/hcp-annot-vc/data_hcp-annot-vc/save",
-  "PATH_SAVE_DIR": "/Volumes/server/Projects/annot-vc/derivatives/path_files"
+  "CACHE_DIR": "/Volumes/server/Projects/annot-vc/hcpannot-cache",
+  "DATA_DIR": "/Volumes/server/Projects/annot-vc/data_branch/save",
+  "PROC_DIR": "/Volumes/server/Projects/annot-vc/derivatives/proc",
+  "OUTPUT_DIR": "/Volumes/server/Projects/annot-vc/derivatives"
 }

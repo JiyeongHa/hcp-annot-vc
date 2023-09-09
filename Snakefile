@@ -5,16 +5,10 @@ import pandas as pd
 import matplotlib as mpl
 configfile:
     "config.json"
+os.environ['HCPANNOT_LOAD_PATH'] = config['CACHE_DIR']
 
 # The cache directories:
-cache_path = config['CACHE_DIR']
-# image_cache_path = f'{cache_path}/annot-images'
-# v123_cache_path = f'{cache_path}/annot-v123'
-# csulc_cache_path = f'{cache_path}/annot-csulc'
-# labels_path = f'{cache_path}/results/labels'
-os.environ['HCPANNOT_LOAD_PATH'] = cache_path
 from visualization import *
-
 RATERS = ['BrendaQiu', 'bogengsong', 'JiyeongHa', 'lindazelinzhao', 'nourahboujaber', 'jennifertepan']
 ROIS = ['hV4', 'VO1', 'VO2']
 HEMIS = ['lh','rh']
@@ -24,7 +18,7 @@ rule get_subj_ids_for_rater:
     output:
         subj_ids = os.path.join(config['CACHE_DIR'], 'subj_ids', "rater-{rater}_hemi-{hemi}_roi-{roi}.txt")
     params:
-        trace_save_path = config['TRACE_DIR']
+        trace_save_path = config['OUTPUT_DIR']
     run:
         subj_ids = viscontours.get_trace_list_drawn_by_rater(params.trace_save_path, wildcards.hemi, wildcards.roi, wildcards.rater)
         with open(output.subj_ids,'w') as fp:
@@ -34,25 +28,20 @@ rule get_subj_ids_for_rater:
 
 rule save_trace_cache:
     output:
-        path_cache_file = os.path.join(config['PATH_SAVE_DIR'], "contour-path_space-fsaverage_rater-{rater}_sid-{sid}_hemi-{hemi}_roi-{roi}_npoints-{n_points}.mgz")
+        os.path.join(config['PROC_DIR'],'fsaverage', "{rater}", "{sid}", "{hemi}.roi-{roi}_space-fsaverage_npoints-{n_points}.mgz")
     params:
-        trace_save_path = config['TRACE_DIR']
+        data_dir = config['DATA_DIR'],
+        proc_dir = config['PROC_DIR']
     run:
-        x, y = viscontours.make_path(wildcards.rater,
-                                     wildcards.hemi,
-                                     wildcards.roi,
-                                     int(wildcards.sid),
-                                     int(wildcards.n_points),
-                                     trace_dir=params.trace_save_path,
-                                     save_path=output.path_cache_file,
-                                     verbose=False)
+        x, y = viscontours.make_fsaverage_coords(rater=wildcards.rater,
+                                                 hemi=wildcards.hemi,
+                                                 roi=wildcards.roi,
+                                                 subject=int(wildcards.sid),
+                                                 n_points=int(wildcards.n_points),
+                                                 data_dir=params.data_dir,
+                                                 proc_dir=params.proc_dir,
+                                                 save_path=output[0])
 
-
-def convert_txt_to_list(wildcards):
-    text_file = os.path.join(config['PATH_SAVE_DIR'], f"rater-{wildcards.rater}_hemi-{wildcards.hemi}_roi-{wildcards.roi}.txt")
-    with open(text_file,'r') as fp:
-        fd_list = fp.read().split(',')
-    return fd_list[:-1]
 
 def get_subj_ids(wildcards, all=False):
     if all is False:
@@ -65,6 +54,18 @@ def get_subj_ids(wildcards, all=False):
         subj_ids = ny.data['hcp_lines'].subject_list
     return subj_ids
 
+
+rule all:
+    input:
+        lambda wildcards: expand(os.path.join(config['PROC_DIR'],'fsaverage', "{rater}", "{sid}", "{hemi}.roi-{roi}_space-fsaverage_npoints-{n_points}.mgz"), rater=['JiyeongHa', 'BrendaQiu'], hemi=HEMIS, roi=ROIS, sid=get_subj_ids(wildcards, all=True), n_points=[500])
+
+
+def convert_txt_to_list(wildcards):
+    text_file = os.path.join(config['PATH_SAVE_DIR'], f"rater-{wildcards.rater}_hemi-{wildcards.hemi}_roi-{wildcards.roi}.txt")
+    with open(text_file,'r') as fp:
+        fd_list = fp.read().split(',')
+    return fd_list[:-1]
+
 def get_trace_file_names(wildcards, all):
     ids_list = get_subj_ids(wildcards, all)
     all_files = []
@@ -73,22 +74,14 @@ def get_trace_file_names(wildcards, all):
         all_files.append(f)
     return all_files
 
-def all_subj_ids(all_subjects=True):
-    import neuropythy as ny
-    return ny.data['hcp_lines'].subject_list
 
-rule all:
-    input:
-        expand(os.path.join(config['PATH_SAVE_DIR'],"contour-path_space-fsaverage_rater-{rater}_sid-{sid}_hemi-{hemi}_roi-{roi}_npoints-{n_points}.mgz"), rater=RATERS, hemi=HEMIS, roi=ROIS, sid=all_subj_ids(all_subjects=True), n_points=[500])
-
-rule all_sids:
+rule save_hcp_subject_list:
     input:
         all_files = lambda wildcards: get_trace_file_names(wildcards, all=True)
     output:
-        os.path.join(config['PATH_SAVE_DIR'], "allsids_contour-path_space-fsaverage_rater-{rater}_hemi-{hemi}_roi-{roi}_npoints-{n_points}.txt")
-    shell:
-        "touch {output}"
-
-rule all_sids_all_raters:
-    input:
-        expand(os.path.join(config['PATH_SAVE_DIR'],  "allsids_contour-path_space-fsaverage_rater-{rater}_hemi-{hemi}_roi-{roi}_npoints-{n_points}.txt"), rater=RATERS, hemi=HEMIS, roi=ROIS, n_points=[500])
+        os.path.join(config['OUTPUT_DIR'], "subject_list", "hcp_subject_list.txt")
+    run:
+        import neuropythy as ny
+        test = ny.data['hcp_lines'].subject_list
+        with open(output[0],'w') as f:
+            f.write('\n'.join(str(i) for i in test))
