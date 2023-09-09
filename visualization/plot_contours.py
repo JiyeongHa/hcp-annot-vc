@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from tqdm.notebook import tqdm
 import time
 from glob import glob
-from hcpannot import (vc_plan)
+from hcpannot.proc import proc, meanproc
 import seaborn as sns
 from visualization import utils
 
@@ -41,12 +41,12 @@ def roi_trace_to_path(dat, cortex, roi):
 
 
 def get_path_coords_in_fsaverage(path, cortex):
-    fmap = ny.to_flatmap('occipital_pole', cortex)
+    fmap = ny.to_flatmap('occipital_pole', cortex, radius=np.pi/2)
     fsa_coords = fmap.unaddress(path.addresses)
     return fsa_coords
 
 
-def normalize_coords(fsa_coords, n_points=800):
+def normalize_coords(fsa_coords, n_points=500):
     curve = ny.util.CurveSpline(fsa_coords)
     normed_fsa_coords = curve.linspace(n_points)
     return normed_fsa_coords
@@ -74,14 +74,19 @@ def _display_msg(message, verbose):
         pass
 
 
-def make_path(rater,
+def make_fsaverage_coords(rater,
                hemi,
                roi,
                subject,
                n_points,
-               trace_dir,
+               data_dir,
+               proc_dir,
                save_path,
-               verbose=True):
+               verbose=True,
+               return_annot=False):
+    """ proc_dir is the save_path argument of proc(). it should be a directory.
+    data_dir is load_path of proc(). It should be a directory containing contours.json files.
+    save_path is a path including .mgz file name for a matrix converted to a matrix."""
     _display_msg(f'---------------------', verbose)
     _display_msg(f'subject no.{subject}', verbose)
     total_start = time.time()
@@ -89,22 +94,21 @@ def make_path(rater,
         _display_msg(f'found cache data!', verbose)
         (x, y) = ny.load(save_path)
     else:
-        annot = vc_plan(rater=rater, sid=subject, hemisphere=hemi, save_path=trace_dir)
+        savedir = os.path.dirname(save_path)
+        os.makedirs(savedir, mode=0o775, exist_ok=True)
+        annot = proc('ventral',
+                     load_path=data_dir,
+                     sid=subject,
+                     rater=rater,
+                     hemisphere=hemi,
+                     save_path=proc_dir)
         _display_msg(f'loading surface mesh....', verbose)
-        start = time.time()
-        cortex = load_cortex(subject, hemi)
-        end = time.time()
-        _display_msg(f'done! elpased time is {np.round(end - start, 3)} sec.\nNow converting trace to path...', verbose)
-        start = time.time()
-        path = roi_trace_to_path(annot, cortex, roi)
-        end = time.time()
-        _display_msg(f'done! elpased time is {np.round(end - start, 3)} sec', verbose)
+        cortex = annot['cortex']
+        path = annot['paths'][roi]
         _display_msg('Now transforming the path to fsaverage space...', verbose)
         start = time.time()
         fsa_coords = get_path_coords_in_fsaverage(path, cortex)
         end = time.time()
-        _display_msg(f'done! elpased time is {np.round(end - start, 3)} sec.\nnow interpolating the coordinates..',
-                     verbose)
         (x, y) = normalize_coords(fsa_coords, n_points)
         ny.save(save_path, [x, y])
     total_end = time.time()
@@ -151,7 +155,7 @@ def plot_multiple_path(normed_fsa_coords_dict, legend=True, average_only=False, 
     ax.get_legend().set_visible(legend)
     plt.tight_layout()
 
-def get_trace_list_drawn_by_rater(trace_save_path, hemi, roi, rater, return_full_path=False):
+def get_contour_list_drawn_by_rater(trace_save_path, hemi, roi, rater, return_full_path=False):
 
     path_list = glob(os.path.join(trace_save_path, rater, f'*/{hemi}.{roi}.json'))
     if return_full_path is True:
@@ -256,7 +260,7 @@ def check_sids(df, sid, y=None, hue=None, hue_order=None,
                          legend_out=True,
                          sharex=True, sharey=True, **kwargs)
     grid = grid.map_dataframe(sns.histplot, sid, y,
-                              palette=sns.color_palette('hls', 6),
+                              palette=sns.color_palette('hls', df[hue].nunique()),
                               hue=hue, hue_order=hue_order,
                               edgecolor='grey', linewidth=0.01,
                               multiple="stack", discrete=True)
