@@ -58,22 +58,19 @@ def heatmap_surface_area(df, mask=None, height=7, cmap="YlOrRd",
                        cmap=cmap, vmin=vmin, vmax=vmax, cbar_kws={"shrink": .7},
                        linewidth=.3, square=True)
     if boundary_line is not None:
-        ax.hlines(boundary_line, ax.get_xlim()[0], (ax.get_xlim()[1]/2)+0.5, color='blue', linewidth=2, linestyles='--'),
-        ax.vlines(boundary_line, (ax.get_ylim()[0]/2)+0.5, ax.get_ylim()[0], color='blue', linewidth=2, linestyles='--')
+        ax.hlines(boundary_line, ax.get_xlim()[0], (ax.get_xlim()[1]/2), color='blue', linewidth=2, linestyles='--'),
+        ax.vlines(boundary_line, (ax.get_ylim()[0]/2), ax.get_ylim()[0], color='blue', linewidth=2, linestyles='--')
     return ax
 
-def violinplot_surface_area(df, x, x_order, hue='hemisphere', hue_order=['lh','rh'], split=True,
+def violinplot_surface_area(df, x, y, x_order, hue='hemisphere', hue_order=['lh','rh'], split=True,
                             col=None, col_wrap=None,
-                            relative_area=True, height=8, cmap=sns.color_palette("Spectral")):
+                            height=8, cmap=sns.color_palette("Spectral")):
     sns.set(style={'axes.facecolor':'white', 'font.family':'Helvetica'},
             rc={'axes.labelpad': 25}, font_scale=height/3)
     sns.despine(top=True, bottom=True, right=True)
-    if relative_area is True:
-        df['p_surface_area'] = df.apply(lambda x: calculate_percent(x['surface_area'], cortex=x['cortex']), axis=1)
-        y = 'p_surface_area'
+    if 'percent' in y:
         y_label = 'Relative surface area (%)'
     else:
-        y = 'surface_area'
         y_label = r'Surface area ($mm^2$)'
     grid = sns.FacetGrid(df,
                          col=col, col_wrap=col_wrap,
