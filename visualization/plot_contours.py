@@ -6,6 +6,8 @@ from tqdm.notebook import tqdm
 import time
 from glob import glob
 from hcpannot.proc import proc, meanproc
+from hcpannot.analysis import meanrater
+from hcpannot import (save_contours, load_contours)
 import seaborn as sns
 from visualization import utils
 
@@ -40,11 +42,6 @@ def roi_trace_to_path(dat, cortex, roi):
     return path
 
 
-def get_path_coords_in_fsaverage(path, cortex):
-    fmap = ny.to_flatmap('occipital_pole', cortex, radius=np.pi/2)
-    fsa_coords = fmap.unaddress(path.addresses)
-    return fsa_coords
-
 
 def normalize_coords(fsa_coords, n_points=500):
     curve = ny.util.CurveSpline(fsa_coords)
@@ -74,47 +71,58 @@ def _display_msg(message, verbose):
         pass
 
 
-def make_fsaverage_coords(rater,
-               hemi,
-               roi,
-               subject,
-               n_points,
-               data_dir,
-               proc_dir,
-               save_path,
-               verbose=True,
-               return_annot=False):
-    """ proc_dir is the save_path argument of proc(). it should be a directory.
+
+def get_trace_coords_in_fsaverage(coords, annot):
+    cortex = annot['cortex']
+    fmap1 = annot['flatmap']
+    fmap2 = ny.to_flatmap('occipital_pole', cortex)
+    addr = fmap1.address(coords)
+    fsa_coords = fmap2.unaddress(addr)
+    return fsa_coords
+
+def make_fsaverage_coords(stream,
+                          rater,
+                          hemi,
+                          contour,
+                          subject,
+                          n_points,
+                          data_dir,
+                          proc_dir,
+                          save_path,
+                          verbose=True,
+                          return_annot=False):
+    """ 
     data_dir is load_path of proc(). It should be a directory containing contours.json files.
-    save_path is a path including .mgz file name for a matrix converted to a matrix."""
+    save_path is a path including .mgz file name for a matrix converted to a matrix. The parent directory of save_path will be used as a save_path argument for the proc() (=proc_dir) """
     _display_msg(f'---------------------', verbose)
     _display_msg(f'subject no.{subject}', verbose)
-    total_start = time.time()
     if os.path.isfile(save_path):
         _display_msg(f'found cache data!', verbose)
-        (x, y) = ny.load(save_path)
+        fsa_coords = ny.load(save_path)
     else:
-        savedir = os.path.dirname(save_path)
+        _display_msg(f'Start making coordinates...', verbose)
         os.makedirs(savedir, mode=0o775, exist_ok=True)
-        annot = proc('ventral',
-                     load_path=data_dir,
-                     sid=subject,
-                     rater=rater,
-                     hemisphere=hemi,
-                     save_path=proc_dir)
-        _display_msg(f'loading surface mesh....', verbose)
-        cortex = annot['cortex']
-        path = annot['paths'][roi]
-        _display_msg('Now transforming the path to fsaverage space...', verbose)
-        start = time.time()
-        fsa_coords = get_path_coords_in_fsaverage(path, cortex)
-        end = time.time()
-        (x, y) = normalize_coords(fsa_coords, n_points)
-        ny.save(save_path, [x, y])
-    total_end = time.time()
-    _display_msg(f'subject no. {subject} is finished! Elapsed time: {np.round(total_end - total_start, 2)} sec',
-                 True)
-    return x, y
+        if rater == 'mean':
+            _display_msg(f'Using meanproc()....', verbose)
+            annot = meanproc(stream,
+                             load_path=data_dir,
+                             sid=subject,
+                             hemisphere=hemi,
+                             save_path=proc_dir)
+        else:
+            annot = proc(stream,
+                         rater=rater,
+                         load_path=data_dir,
+                         sid=subject,
+                         hemisphere=hemi,
+                         save_path=proc_dir)
+            
+        trace = annot['traces'][contour]
+        coords = trace.curve.linspace(n_points)
+        fsa_coords = get_trace_coords_in_fsaverage(coords, annot)
+        ny.save(save_path, fsa_coords)    
+      
+    return fsa_coords
 
 
 def main(rater,
