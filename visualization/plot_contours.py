@@ -274,7 +274,7 @@ def check_sids(df, sid, y=None, hue=None, hue_order=None,
     # for subplot_title, ax in grid.axes_dict.items():
     #     ax.set_title(f" ")
     grid.add_legend()
-    grid.fig.suptitle(suptitle, fontweight='bold')
+    grid.fig.suptitle(suptitle, fontweight='bold', y=1.05)
     grid.set_axis_labels('HCP subjects', 'Researchers')
     grid.set(xlim=(0, 180), xticks=(0, 90, 180))
     utils.save_fig(save_path)
