@@ -80,47 +80,48 @@ def get_trace_coords_in_fsaverage(coords, annot):
     fsa_coords = fmap2.unaddress(addr)
     return fsa_coords
 
-def make_fsaverage_coords(stream,
-                          rater,
-                          hemi,
-                          contour,
-                          subject,
-                          n_points,
-                          data_dir,
-                          proc_dir,
-                          save_path,
-                          verbose=True,
-                          return_annot=False):
+def make_fsaverage_contours(stream,
+                           rater,
+                           hemisphere,
+                           roi,
+                           sid,
+                           n_points,
+                           data_dir,
+                           proc_dir,
+                           cache_file,
+                           verbose=True,
+                           return_annot=False):
     """ 
     data_dir is load_path of proc(). It should be a directory containing contours.json files.
     save_path is a path including .mgz file name for a matrix converted to a matrix. The parent directory of save_path will be used as a save_path argument for the proc() (=proc_dir) """
-    _display_msg(f'---------------------', verbose)
-    _display_msg(f'subject no.{subject}', verbose)
-    if os.path.isfile(save_path):
+    _display_msg(f'......subject no.{sid}', verbose)
+    cache_path = os.path.join(proc_dir, cache_file)
+    if os.path.isfile(cache_path):
         _display_msg(f'found cache data!', verbose)
-        fsa_coords = ny.load(save_path)
+        fsa_coords = ny.load(cache_path)
     else:
         _display_msg(f'Start making coordinates...', verbose)
-        os.makedirs(savedir, mode=0o775, exist_ok=True)
+        os.makedirs(proc_dir, mode=0o775, exist_ok=True)
         if rater == 'mean':
-            _display_msg(f'Using meanproc()....', verbose)
+            _display_msg(f'No cache data found. Using meanproc()....', verbose)
             annot = meanproc(stream,
                              load_path=data_dir,
-                             sid=subject,
-                             hemisphere=hemi,
+                             sid=sid,
+                             hemisphere=hemisphere,
                              save_path=proc_dir)
         else:
+            _display_msg(f'No cache data found. Using proc()....', verbose)
             annot = proc(stream,
                          rater=rater,
                          load_path=data_dir,
-                         sid=subject,
-                         hemisphere=hemi,
+                         sid=sid,
+                         hemisphere=hemisphere,
                          save_path=proc_dir)
             
-        trace = annot['traces'][contour]
+        trace = annot['traces'][roi]
         coords = trace.curve.linspace(n_points)
         fsa_coords = get_trace_coords_in_fsaverage(coords, annot)
-        ny.save(save_path, fsa_coords)    
+        ny.save(cache_path, fsa_coords)    
       
     return fsa_coords
 
