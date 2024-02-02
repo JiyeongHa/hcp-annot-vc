@@ -3,6 +3,7 @@ import sys
 import pandas as pd
 import seaborn as sns
 import numpy as np
+from pathlib import Path
 import matplotlib.pyplot as plt
 
 def calculate_percent(roi, cortex):
@@ -45,7 +46,7 @@ def get_correlation_matrix(df):
 
 def heatmap_surface_area(df, mask=None, height=7, cmap="YlOrRd",
                          annot=True, boundary_line=None,
-                         fmt=".2f", vmin=0, vmax=1):
+                         fmt=".2f", vmin=0, vmax=1, save_path=None):
     sns.set(style={'axes.facecolor': 'white', 'font.family': 'Helvetica'},
             rc={'axes.labelpad': 20, 'figure.figsize': (height, height)},
             font_scale=height / 6)
@@ -60,28 +61,46 @@ def heatmap_surface_area(df, mask=None, height=7, cmap="YlOrRd",
     if boundary_line is not None:
         ax.hlines(boundary_line, ax.get_xlim()[0], (ax.get_xlim()[1]/2), color='blue', linewidth=2, linestyles='--'),
         ax.vlines(boundary_line, (ax.get_ylim()[0]/2), ax.get_ylim()[0], color='blue', linewidth=2, linestyles='--')
+    if save_path is not None:
+        parent_path = Path(save_path)
+        if not os.path.exists(parent_path.parent.absolute()):
+            os.makedirs(parent_path.parent.absolute())
+        plt.savefig(save_path, bbox_inches='tight', transparent=True)
     return ax
 
 def violinplot_surface_area(df, x, y, x_order, hue='hemisphere', hue_order=['lh','rh'], split=True,
-                            col=None, col_wrap=None,
-                            height=8, cmap=sns.color_palette("Spectral")):
-    sns.set(style={'axes.facecolor':'white', 'font.family':'Helvetica'},
-            rc={'axes.labelpad': 25}, font_scale=height/3)
+                            col=None, col_wrap=None, bw=.2,
+                            height=8, cmap=sns.color_palette("Spectral"), save_path=None):
+    sns.set(style={'axes.facecolor':'white', 
+                   'font.family':'Helvetica'},
+            rc={'axes.labelpad': 25}, 
+            font_scale=height/3)
     sns.despine(top=True, bottom=True, right=True)
     if 'percent' in y:
         y_label = 'Relative surface area (%)'
-    else:
+    elif 'mm2' in y:
         y_label = r'Surface area ($mm^2$)'
     grid = sns.FacetGrid(df,
                          col=col, col_wrap=col_wrap,
                          height=height,
-                         aspect=1.3,
+                         aspect=1.4,
                          legend_out=True,
                          sharex=True, sharey=True)
     grid = grid.map(sns.violinplot, x, y, hue,
                     hue_order=hue_order, split=split, order=x_order, palette=cmap, cut=0,
-                    inner='box', linewidth=2, saturation=0.9, bw=.15, edgecolor='black')
-    grid.set_axis_labels('', y_label)
+                    inner='box', linewidth=2, saturation=0.9, bw=bw, edgecolor='black')
+    grid.add_legend(bbox_to_anchor=(1, 0.8))
+    grid.set_axis_labels('ROIs', y_label)
+    if col is not None:
+        for subplot_title, ax in grid.axes_dict.items():
+            ax.set_title(f"{subplot_title.title()}")
+    if save_path is not None:
+        parent_path = Path(save_path)
+        if not os.path.exists(parent_path.parent.absolute()):
+            os.makedirs(parent_path.parent.absolute())
+        plt.savefig(save_path, bbox_inches='tight', transparent=True)
+    return grid
+    
     grid.add_legend(title=hue.title(), bbox_to_anchor=(1, 0.87))
     # for ax in grid.axes:
     #     ax.tick_params(bottom=False)
