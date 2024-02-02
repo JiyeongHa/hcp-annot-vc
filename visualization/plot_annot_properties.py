@@ -51,7 +51,7 @@ def heatmap_surface_area(df, mask=None, height=7, cmap="YlOrRd",
             rc={'axes.labelpad': 20, 'figure.figsize': (height, height)},
             font_scale=height / 6)
     if annot is True:
-        annot_kws = {"size": 35 / np.sqrt(len(df))}
+        annot_kws = {"size": 30 / np.sqrt(len(df))}
     else:
         annot_kws = None
     ax = sns.heatmap(df, mask=mask,
