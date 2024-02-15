@@ -9,6 +9,7 @@ from hcpannot.proc import proc, meanproc
 from hcpannot.analysis import meanrater
 from hcpannot import (save_contours, load_contours)
 import seaborn as sns
+from pathlib import Path
 from visualization import utils
 
 def set_rcParams(rc):
@@ -121,6 +122,8 @@ def make_fsaverage_contours(stream,
         trace = annot['traces'][roi]
         coords = trace.curve.linspace(n_points)
         fsa_coords = get_trace_coords_in_fsaverage(coords, annot)
+        parent_path = Path(cache_path)
+        os.makedirs(parent_path.parent.absolute(), exist_ok = True)
         ny.save(cache_path, fsa_coords)    
       
     return fsa_coords
