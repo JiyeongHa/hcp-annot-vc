@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from tqdm.notebook import tqdm
 import time
 from glob import glob
-from hcpannot.proc import proc, meanproc
+from hcpannot.proc import proc
 from hcpannot.analysis import meanrater
 from hcpannot import (save_contours, load_contours)
 import seaborn as sns
