@@ -103,22 +103,22 @@ def make_fsaverage_contours(stream,
     else:
         _display_msg(f'Start making coordinates...', verbose)
         os.makedirs(proc_dir, mode=0o775, exist_ok=True)
-        if rater == 'mean':
-            _display_msg(f'No cache data found. Using meanproc()....', verbose)
-            annot = meanproc(stream,
-                             load_path=data_dir,
-                             sid=sid,
-                             hemisphere=hemisphere,
-                             save_path=proc_dir)
-        else:
-            _display_msg(f'No cache data found. Using proc()....', verbose)
-            annot = proc(stream,
-                         rater=rater,
-                         load_path=data_dir,
-                         sid=sid,
-                         hemisphere=hemisphere,
-                         save_path=proc_dir)
-            
+#         if rater == 'mean':
+#             _display_msg(f'No cache data found. Using meanproc()....', verbose)
+#             annot = meanproc(stream,
+#                              load_path=data_dir,
+#                              sid=sid,
+#                              hemisphere=hemisphere,
+#                              save_path=proc_dir)
+#         else:
+#             _display_msg(f'No cache data found. Using proc()....', verbose)
+        annot = proc(stream,
+                     rater=rater,
+                     load_path=data_dir,
+                     sid=sid,
+                     hemisphere=hemisphere,
+                     save_path=proc_dir)
+
         trace = annot['traces'][roi]
         coords = trace.curve.linspace(n_points)
         fsa_coords = get_trace_coords_in_fsaverage(coords, annot)
