@@ -94,7 +94,8 @@ def make_fsaverage_contours(stream,
                            return_annot=False):
     """ 
     data_dir is load_path of proc(). It should be a directory containing contours.json files.
-    save_path is a path including .mgz file name for a matrix converted to a matrix. The parent directory of save_path will be used as a save_path argument for the proc() (=proc_dir) """
+    save_path is a path including .mgz file name for a matrix converted to a matrix. 
+    The parent directory of save_path will be used as a save_path argument for the proc() (=proc_dir) """
     _display_msg(f'......subject no.{sid}', verbose)
     cache_path = os.path.join(proc_dir, cache_file)
     if os.path.isfile(cache_path):
@@ -262,7 +263,7 @@ def check_sids(df, sid, y=None, hue=None, hue_order=None,
     sns.set_context("notebook", font_scale=2.5)
     subj_ids = list(ny.data['hcp_lines'].subject_list)
     subj_ids.sort()
-    df = df.replace({sid: dict(zip(subj_ids, np.arange(0, 181)))})
+    df = df.replace({sid: dict(zip([999999]+subj_ids, np.arange(0, 182)))}) #999999 represents mean across subjects 
     grid = sns.FacetGrid(df,
                          col=col, col_order=col_order,
                          row=row, row_order=row_order,
@@ -280,6 +281,6 @@ def check_sids(df, sid, y=None, hue=None, hue_order=None,
     grid.add_legend()
     grid.fig.suptitle(suptitle, fontweight='bold', y=1.05)
     grid.set_axis_labels('HCP subjects', 'Researchers')
-    grid.set(xlim=(0, 180), xticks=(0, 90, 180))
+    grid.set(xlim=(0, 182), xticks=(0, 90, 181))
     utils.save_fig(save_path)
     return grid
