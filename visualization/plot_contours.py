@@ -11,13 +11,18 @@ from hcpannot import (save_contours, load_contours)
 import seaborn as sns
 from pathlib import Path
 from visualization import utils
+import matplotlib as mpl
+
+font_rc = {'family':'sans-serif',
+           'sans-serif':['HelveticaNeue', 'Helvetica', 'Arial'],
+          'weight': 'light'}
+mpl.rc('font', **font_rc)
 
 def set_rcParams(rc):
     if rc is None:
         pass
     else:
-        for k, v in rc.items():
-            plt.rcParams[k] = v
+        plt.rcParams.update(rc)
 
 def set_fontsize(small, medium, large):
     font_rc = {'font.size': medium,
@@ -233,16 +238,6 @@ def find_interquartile_range(my_list, axis=0):
     return np.percentile(my_list, 75, axis=axis) - np.percentile(my_list, 25, axis=axis)
 
 def calculate_IQR_summary(x, y, axis=0):
-    x_iqr = find_interquartile_range(x, axis=axis)
-    y_iqr = find_interquartile_range(y, axis=axis)
-    return np.sqrt(x_iqr ** 2 + y_iqr ** 2)
-
-
-def check_sids(df, sid, y=None, hue=None, hue_order=None,
-               row=None, row_order=None,
-               col=None, col_order=None,
-               suptitle=' ',
-               height=10, save_path=None, **kwargs):
     rc = {'xtick.bottom': True,
           'xtick.labelbottom': True,
           'xtick.major.size': 2,
@@ -254,21 +249,36 @@ def check_sids(df, sid, y=None, hue=None, hue_order=None,
           'ytick.major.width': 2,
           'ytick.labelsize': 8,
           'axes.linewidth': 2,
-          'axes.titlesize': 10,
           'axes.titlepad': 10,
-          'axes.titleweight': "bold",
           'axes.labelpad': 20,
+          'figure.figsize':(7, 7*1.2)
           }
+    x_iqr = find_interquartile_range(x, axis=axis)
+    y_iqr = find_interquartile_range(y, axis=axis)
+    return np.sqrt(x_iqr ** 2 + y_iqr ** 2)
+
+
+def check_sids(df, sid, y=None, hue=None, hue_order=None,
+               row=None, row_order=None,
+               col=None, col_order=None,
+               suptitle=' ',
+               save_path=None, **kwargs):
+    
+    rc = {'xtick.bottom': True,
+          'xtick.labelbottom': True,
+          'figure.figsize':(7, 7*1.2)
+          }    
+    
+    sns.set_context("notebook", font_scale=2)
+    #sns.set_theme(style="ticks", context="notebook", font_scale=2)
     set_rcParams(rc)
-    sns.set_context("notebook", font_scale=2.5)
     subj_ids = list(ny.data['hcp_lines'].subject_list)
     subj_ids.sort()
     df = df.replace({sid: dict(zip([999999]+subj_ids, np.arange(0, 182)))}) #999999 represents mean across subjects 
     grid = sns.FacetGrid(df,
                          col=col, col_order=col_order,
                          row=row, row_order=row_order,
-                         height=height,
-                         aspect=3.5,
+                         aspect=3.3,
                          legend_out=True,
                          sharex=True, sharey=True, **kwargs)
     grid = grid.map_dataframe(sns.histplot, sid, y,
