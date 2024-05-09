@@ -17,3 +17,15 @@ def remove_all_ticks_from_fig(axes):
         ax.set_xticks([])            # Remove x-axis ticks
         ax.set_xticklabels([])        # Remove x-axis tick labels
  
+def set_rcParams(rc):
+    if rc is None:
+        pass
+    else:
+        for k, v in rc.items():
+            plt.rcParams[k] = v
+            
+            
+def get_height_based_on_width(width, aspect_ratio):
+
+    return aspect_ratio * width
+            

@@ -5,6 +5,20 @@ import seaborn as sns
 import numpy as np
 from pathlib import Path
 import matplotlib.pyplot as plt
+import matplotlib as mpl
+from . import utils
+
+rc = {'text.color': 'black',
+      'axes.labelcolor': 'black',
+      'xtick.color': 'black',
+      'ytick.color': 'black',
+      'font.family': 'helveticaneue',
+      'font.weight': 'light',
+      'font.size' : 11,
+      'figure.dpi': 72*3,
+      'savefig.dpi': 72*4,
+      }
+mpl.rcParams.update(rc)
 
 def calculate_percent(roi, cortex):
     return roi*100/cortex
@@ -44,20 +58,20 @@ def get_correlation_matrix(df):
     return corr_matrix, mask
 
 
-def heatmap_surface_area(df, mask=None, height=7, cmap="YlOrRd",
-                         annot=True, boundary_line=None,
-                         fmt=".2f", vmin=0, vmax=1, save_path=None):
-    sns.set(style={'axes.facecolor': 'white', 'font.family': 'Helvetica'},
-            rc={'axes.labelpad': 20, 'figure.figsize': (height, height)},
-            font_scale=height / 6)
+def heatmap_surface_area(df, mask=None, cmap="YlOrRd",
+                         annot=True, boundary_line=None, width=5, height=1, 
+                         fmt=".2f", vmin=0, vmax=1, save_path=None, **kwarg):
+    rc.update({'axes.labelpad': 20, 'figure.figsize':(width, height),'font.size' : 10})
+    utils.set_rcParams(rc)
+    sns.set_theme(context="notebook", style='ticks', rc=rc)
     if annot is True:
-        annot_kws = {"size": 30 / np.sqrt(len(df))}
+        annot_kws = {"size": rc['font.size'] * 0.7}
     else:
         annot_kws = None
-    ax = sns.heatmap(df, mask=mask,
-                       annot=annot, annot_kws=annot_kws, fmt=fmt,
-                       cmap=cmap, vmin=vmin, vmax=vmax, cbar_kws={"shrink": .7},
-                       linewidth=.3, square=True)
+    ax = sns.heatmap(df, mask=mask, 
+                     annot=annot, annot_kws=annot_kws, fmt=fmt,
+                     cmap=cmap, vmin=vmin, vmax=vmax, cbar_kws={"shrink": .7},
+                     linewidth=.3, square=True)
     if boundary_line is not None:
         ax.hlines(boundary_line, ax.get_xlim()[0], (ax.get_xlim()[1]/2), color='blue', linewidth=2, linestyles='--'),
         ax.vlines(boundary_line, (ax.get_ylim()[0]/2), ax.get_ylim()[0], color='blue', linewidth=2, linestyles='--')
@@ -68,13 +82,13 @@ def heatmap_surface_area(df, mask=None, height=7, cmap="YlOrRd",
         plt.savefig(save_path, bbox_inches='tight', transparent=True)
     return ax
 
+
 def violinplot_surface_area(df, x, y, x_order, hue='hemisphere', hue_order=['lh','rh'], split=True,
-                            col=None, col_wrap=None, bw=.2,
-                            height=8, cmap=sns.color_palette("Spectral"), save_path=None):
-    sns.set(style={'axes.facecolor':'white', 
-                   'font.family':'Helvetica'},
-            rc={'axes.labelpad': 25}, 
-            font_scale=height/3)
+                            col=None, col_wrap=None, bw=.2, linewidth=0.5, font_size=11,
+                            width=3.14, height=3, cmap=sns.color_palette("Spectral"), save_path=None):
+    rc.update({'axes.labelpad': 10, 'figure.figsize':(width, height),'font.size' : font_size})
+    utils.set_rcParams(rc)
+    #sns.set_theme(context="notebook", style='ticks', rc=rc)
     sns.despine(top=True, bottom=True, right=True)
     if 'percent' in y:
         y_label = 'Relative surface area (%)'
@@ -82,13 +96,11 @@ def violinplot_surface_area(df, x, y, x_order, hue='hemisphere', hue_order=['lh'
         y_label = r'Surface area ($mm^2$)'
     grid = sns.FacetGrid(df,
                          col=col, col_wrap=col_wrap,
-                         height=height,
-                         aspect=1.4,
                          legend_out=True,
                          sharex=True, sharey=True)
     grid = grid.map(sns.violinplot, x, y, hue,
                     hue_order=hue_order, split=split, order=x_order, palette=cmap, cut=0,
-                    inner='box', linewidth=2, saturation=0.9, bw=bw, edgecolor='black')
+                    inner='box', linewidth=linewidth, saturation=0.9, bw=bw, edgecolor='black')
     grid.add_legend(bbox_to_anchor=(1, 0.8))
     grid.set_axis_labels('ROIs', y_label)
     if col is not None:
