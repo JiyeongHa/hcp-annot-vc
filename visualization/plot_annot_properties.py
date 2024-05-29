@@ -12,6 +12,8 @@ rc = {'text.color': 'black',
       'axes.labelcolor': 'black',
       'xtick.color': 'black',
       'ytick.color': 'black',
+      'xtick.labelcolor': 'black',
+      'ytick.labelcolor': 'black',
       'font.family': 'helveticaneue',
       'font.weight': 'light',
       'font.size' : 11,
@@ -88,7 +90,8 @@ def violinplot_surface_area(df, x, y, x_order, hue='hemisphere', hue_order=['lh'
                             width=3.14, height=3, cmap=sns.color_palette("Spectral"), save_path=None):
     rc.update({'axes.labelpad': 10, 'figure.figsize':(width, height),'font.size' : font_size})
     utils.set_rcParams(rc)
-    #sns.set_theme(context="notebook", style='ticks', rc=rc)
+    sns.set_theme(context="notebook", style='ticks', rc=rc)
+    print(rc)
     sns.despine(top=True, bottom=True, right=True)
     if 'percent' in y:
         y_label = 'Relative surface area (%)'
