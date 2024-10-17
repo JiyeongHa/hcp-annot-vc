@@ -85,6 +85,20 @@ def heatmap_surface_area(df, mask=None, cmap="YlOrRd",
     return ax
 
 
+def ax_violinplot_surface_area(ax, df, x, y, order, 
+                               cmap=None, 
+                               hue='hemisphere', hue_order=['lh','rh'], 
+                               split=True, bw=.2, linewidth=.5, **kwargs):
+    sns.despine(top=True, bottom=False, right=True)
+    
+    sns.set_theme(context='notebook', style='ticks', rc=rc)
+    grid = sns.violinplot(df, x=x, y=y, split=True,
+                           order=order,
+                           hue=hue, hue_order=hue_order, bw=bw,
+                           palette=cmap, linewidth=linewidth, ax=ax, **kwargs)
+
+    return grid
+
 def violinplot_surface_area(df, x, y, x_order, hue='hemisphere', hue_order=['lh','rh'], split=True,
                             col=None, col_wrap=None, bw=.2, linewidth=0.5, font_size=11,
                             width=3.14, height=3, cmap=sns.color_palette("Spectral"), save_path=None):
@@ -99,7 +113,7 @@ def violinplot_surface_area(df, x, y, x_order, hue='hemisphere', hue_order=['lh'
         y_label = r'Surface area ($mm^2$)'
     grid = sns.FacetGrid(df,
                          col=col, col_wrap=col_wrap,
-                         legend_out=True,
+                         legend_out=True, 
                          sharex=True, sharey=True)
     grid = grid.map(sns.violinplot, x, y, hue,
                     hue_order=hue_order, split=split, order=x_order, palette=cmap, cut=0,
