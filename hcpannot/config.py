@@ -94,6 +94,8 @@ labelkey_by_region = {
     'ventral': labelkey_ventral,
     'dorsal': labelkey_dorsal}
 labelkey = {k:v for d in labelkey_by_region.values() for (k,v) in d.items()}
+# Make lists of region names also:
+region_areas = {k: tuple(v.keys()) for (k,v) in labelkey_by_region.items()}
 
 # Raters -----------------------------------------------------------------------
 # The name used for the mean rater (the average of other raters).
@@ -101,19 +103,16 @@ meanrater = 'mean'
 # The github ids for the raters involved in the project (these are the default
 # processing targets).
 ventral_raters = [
-    'bogengsong',
-    'BrendaQiu',
-    'JiyeongHa',
-    'lindazelinzhao',
-    'nourahboujaber',
-    'jennifertepan']
+    'R1',
+    'R2',
+    'R3',
+    'R4',
+    'R5']
 dorsal_raters = [
-    'Annie-lsc',
-    'BrendaQiu',
-    'mominbashir',
-    #'oadesiyan',
-    #'sc5992',
-    'qiutan6li']
+    'R6',
+    'R1',
+    'R7',
+    'R8']
 raters_by_region = {
     'ventral': ventral_raters,
     'dorsal': dorsal_raters,
